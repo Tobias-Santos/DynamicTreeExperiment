@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Árvore Genealógica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Conector vertical do nó pai para linha horizontal dos filhos */
+    .connector-vertical {
+      width: 2px;
+      background-color: black;
+      height: 20px;
+      margin: 0 auto;
+    }
+    /* Container dos filhos com linha horizontal que conecta todos eles */
+    .children-container {
+      position: relative;
+      display: flex;
+      gap: 24px;
+      margin-top: 10px;
+      padding-top: 20px; /* espaço para a linha horizontal */
+    }
+    /* Linha horizontal que conecta os filhos */
+    .connector-horizontal {
+      position: absolute;
+      top: 10px; /* metade do padding-top */
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: black;
+      z-index: 0;
+    }
+    /* Conector vertical do filho para a linha horizontal */
+    .child-connector-vertical {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 10px;
+      background-color: black;
+      z-index: 1;
+    }
+    /* Wrapper do filho para posicionar o conector vertical */
+    .child-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-start justify-center p-10">
+  <div id="tree-root" class="flex flex-col items-center space-y-4"></div>
+
+  <script>
+    let nodeId = 0;
+
+    function createNode(parent) {
+      const id = `node-${nodeId++}`;
+
+      // Wrapper do nó + filhos
+      const wrapper = document.createElement("div");
+      wrapper.className = "flex flex-col items-center space-y-2";
+      wrapper.id = id;
+
+      // Quadrado (nó)
+      const box = document.createElement("div");
+      box.className = "w-32 h-32 bg-white border-2 border-gray-700 flex items-center justify-center relative shadow-md rounded";
+      box.innerText = `Nó ${nodeId}`;
+
+      // Botão "+"
+      const addButton = document.createElement("button");
+      addButton.innerText = "+";
+      addButton.className = "absolute bottom-[-12px] left-1/2 transform -translate-x-1/2 bg-green-500 hover:bg-green-600 text-white w-6 h-6 flex items-center justify-center rounded-full shadow";
+
+      // Container para os filhos
+      const childrenWrapper = document.createElement("div");
+      childrenWrapper.className = "children-container";
+
+      // Linha horizontal que conecta os filhos
+      const connectorHorizontal = document.createElement("div");
+      connectorHorizontal.className = "connector-horizontal";
+
+      childrenWrapper.appendChild(connectorHorizontal);
+
+      // Conector vertical do pai para os filhos
+      const connectorVertical = document.createElement("div");
+      connectorVertical.className = "connector-vertical";
+
+      // Adiciona filho
+      addButton.addEventListener("click", () => {
+        if (childrenWrapper.children.length === 1) { 
+          // Só adiciona vertical connector quando houver filhos (existe só a linha horizontal no momento)
+          wrapper.appendChild(connectorVertical);
+          wrapper.appendChild(childrenWrapper);
+        }
+        const childNode = createNode(wrapper);
+
+        // Envolver o filho para posicionar conector vertical dele
+        const childWrapper = document.createElement("div");
+        childWrapper.className = "child-wrapper";
+
+        // Conector vertical do filho
+        const childConnectorVertical = document.createElement("div");
+        childConnectorVertical.className = "child-connector-vertical";
+
+        childWrapper.appendChild(childConnectorVertical);
+        childWrapper.appendChild(childNode);
+        childrenWrapper.appendChild(childWrapper);
+      });
+
+      box.appendChild(addButton);
+      wrapper.appendChild(box);
+
+      return wrapper;
+    }
+
+    // Inicializa com o nó raiz
+    const root = document.getElementById("tree-root");
+    root.appendChild(createNode(null));
+  </script>
+</body>
+</html>
