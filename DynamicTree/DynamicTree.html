@@ -3,123 +3,471 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Árvore Genealógica</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Árvore Genealógica Estilo Timeline</title>
+
   <style>
-    /* Conector vertical do nó pai para linha horizontal dos filhos */
-    .connector-vertical {
-      width: 2px;
-      background-color: black;
-      height: 20px;
-      margin: 0 auto;
+    @font-face {
+      font-family: 'Ancient';
+      src: url("Assets/Fonts/Ancient Medium.ttf") format('truetype');
     }
-    /* Container dos filhos com linha horizontal que conecta todos eles */
+
+    body {
+      font-family: 'Ancient', serif;
+      background-image: url("Assets/Images/wood.jpg");
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      margin: 0;
+      padding: 20px;
+      color: #3a2f14;
+      overflow-x: auto;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    #tree-root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      min-width: max-content;
+    }
+
+    .node-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .node-box {
+      width: 160px;
+      height: 200px;
+      background-image: url("Assets/Images/parchment.jpg");
+      background-size: cover;
+      border: 2px solid #8c6d1f;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(140,109,31,0.7);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 10px;
+      box-sizing: border-box;
+      position: relative;
+      color: #2e2205;
+      font-weight: normal;
+    }
+
+    .name-area {
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: normal;
+      font-size: 1.1rem;
+      text-align: center;
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.7);
+      border-radius: 5px;
+      user-select: text;
+      padding: 4px 6px;
+      color: #2e2205;
+    }
+
+    .name-input {
+      display: none;
+      width: 100%;
+      font-family: 'Ancient', serif;
+      font-size: 1.1rem;
+      text-align: center;
+      padding: 4px 6px;
+      border-radius: 5px;
+      border: 2px solid #8c6d1f;
+      box-sizing: border-box;
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #2e2205;
+    }
+
+    .image-area {
+      flex: 1;
+      margin-top: 8px;
+      border-top: 2px solid #8c6d1f;
+      background-color: rgba(255, 255, 255, 0.6);
+      border-radius: 0 0 10px 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .image-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0 0 10px 10px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .image-placeholder {
+      color: #806a27;
+      font-size: 0.9rem;
+      user-select: none;
+      text-align: center;
+      padding: 8px;
+      font-style: italic;
+    }
+
+    .add-button {
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4CAF50;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(76, 175, 80, 0.7);
+      user-select: none;
+    }
+
+    .add-button:hover {
+      background-color: #45a049;
+    }
+
+    .delete-button {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 16px;
+      line-height: 20px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 2px 4px rgba(244, 67, 54, 0.8);
+      z-index: 10;
+    }
+
+    .delete-button:hover {
+      background-color: #d32f2f;
+    }
+
+    .connector-vertical {
+      width: 4px;
+      background-color: #ffffff;
+      height: 30px;
+      margin: 0 auto;
+      border-radius: 2px;
+      z-index: 0;
+    }
+
     .children-container {
       position: relative;
       display: flex;
       gap: 24px;
       margin-top: 10px;
-      padding-top: 20px; /* espaço para a linha horizontal */
-    }
-    /* Linha horizontal que conecta os filhos */
-    .connector-horizontal {
-      position: absolute;
-      top: 10px; /* metade do padding-top */
-      left: 0;
-      right: 0;
-      height: 2px;
-      background-color: black;
+      padding-top: 20px;
       z-index: 0;
     }
-    /* Conector vertical do filho para a linha horizontal */
+
+    .connector-horizontal {
+      position: absolute;
+      top: 10px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background-color: #ffffff;
+      border-radius: 2px;
+      z-index: 0;
+    }
+
     .child-connector-vertical {
       position: absolute;
       top: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 2px;
-      height: 10px;
-      background-color: black;
+      width: 4px;
+      height: 20px;
+      background-color: #ffffff;
+      border-radius: 2px;
       z-index: 1;
     }
-    /* Wrapper do filho para posicionar o conector vertical */
-    .child-wrapper {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+
+    #saveTreeBtn, #loadTreeBtn {
+      position: fixed;
+      top: 20px;
+      padding: 10px 16px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(76, 175, 80, 0.7);
+      z-index: 9999;
+      user-select: none;
+    }
+
+    #saveTreeBtn:hover, #loadTreeBtn:hover {
+      background-color: #388e3c;
+    }
+
+    #saveTreeBtn {
+      right: 20px;
+    }
+
+    #loadTreeBtn {
+      right: 180px;
     }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-start justify-center p-10">
-  <div id="tree-root" class="flex flex-col items-center space-y-4"></div>
+<body>
+
+  <button id="saveTreeBtn">💾 Salvar Árvore</button>
+  <button id="loadTreeBtn">📂 Carregar Árvore</button>
+  <input type="file" id="fileInput" accept=".json" style="display:none" />
+
+  <div style="overflow:auto; width: 100vw; padding: 20px 0;">
+    <div id="tree-root" style="display:flex; flex-direction:column; align-items:center; min-width:max-content;"></div>
+  </div>
 
   <script>
     let nodeId = 0;
 
-    function createNode(parent) {
+    function createNode() {
       const id = `node-${nodeId++}`;
-
-      // Wrapper do nó + filhos
       const wrapper = document.createElement("div");
-      wrapper.className = "flex flex-col items-center space-y-2";
+      wrapper.className = "node-wrapper";
       wrapper.id = id;
 
-      // Quadrado (nó)
       const box = document.createElement("div");
-      box.className = "w-32 h-32 bg-white border-2 border-gray-700 flex items-center justify-center relative shadow-md rounded";
-      box.innerText = `Nó ${nodeId}`;
+      box.className = "node-box";
 
-      // Botão "+"
+      const nameArea = document.createElement("div");
+      nameArea.className = "name-area";
+      nameArea.textContent = `Nó ${nodeId}`;
+
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.className = "name-input";
+      nameInput.value = nameArea.textContent;
+
+      nameArea.addEventListener("click", () => {
+        nameArea.style.display = "none";
+        nameInput.style.display = "block";
+        nameInput.focus();
+        nameInput.select();
+      });
+
+      nameInput.addEventListener("blur", () => {
+        if(nameInput.value.trim()) {
+          nameArea.textContent = nameInput.value.trim();
+        }
+        nameInput.style.display = "none";
+        nameArea.style.display = "flex";
+      });
+
+      nameInput.addEventListener("keydown", e => {
+        if(e.key === "Enter") nameInput.blur();
+        else if(e.key === "Escape") {
+          nameInput.style.display = "none";
+          nameArea.style.display = "flex";
+        }
+      });
+
+      const imageArea = document.createElement("div");
+      imageArea.className = "image-area";
+
+      const imagePlaceholder = document.createElement("div");
+      imagePlaceholder.className = "image-placeholder";
+      imagePlaceholder.textContent = "Clique para adicionar imagem";
+      imageArea.appendChild(imagePlaceholder);
+
+      const imageInput = document.createElement("input");
+      imageInput.type = "file";
+      imageInput.accept = "image/*";
+      imageInput.style.display = "none";
+
+      let img = null;
+
+      imageArea.addEventListener("click", () => imageInput.click());
+
+      imageArea.addEventListener("contextmenu", e => {
+        e.preventDefault();
+        if(img && confirm("Deseja remover esta imagem?")) {
+          imageArea.innerHTML = "";
+          imageArea.appendChild(imagePlaceholder);
+          img = null;
+        }
+      });
+
+      imageInput.addEventListener("change", () => {
+        const file = imageInput.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          if(!img) {
+            img = document.createElement("img");
+            imageArea.innerHTML = "";
+            imageArea.appendChild(img);
+          }
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
       const addButton = document.createElement("button");
-      addButton.innerText = "+";
-      addButton.className = "absolute bottom-[-12px] left-1/2 transform -translate-x-1/2 bg-green-500 hover:bg-green-600 text-white w-6 h-6 flex items-center justify-center rounded-full shadow";
+      addButton.className = "add-button";
+      addButton.textContent = "+";
 
-      // Container para os filhos
       const childrenWrapper = document.createElement("div");
       childrenWrapper.className = "children-container";
 
-      // Linha horizontal que conecta os filhos
       const connectorHorizontal = document.createElement("div");
       connectorHorizontal.className = "connector-horizontal";
-
       childrenWrapper.appendChild(connectorHorizontal);
 
-      // Conector vertical do pai para os filhos
       const connectorVertical = document.createElement("div");
       connectorVertical.className = "connector-vertical";
 
-      // Adiciona filho
       addButton.addEventListener("click", () => {
-        if (childrenWrapper.children.length === 1) { 
-          // Só adiciona vertical connector quando houver filhos (existe só a linha horizontal no momento)
+        if(childrenWrapper.childElementCount === 1) {
           wrapper.appendChild(connectorVertical);
           wrapper.appendChild(childrenWrapper);
         }
-        const childNode = createNode(wrapper);
-
-        // Envolver o filho para posicionar conector vertical dele
         const childWrapper = document.createElement("div");
         childWrapper.className = "child-wrapper";
-
-        // Conector vertical do filho
         const childConnectorVertical = document.createElement("div");
         childConnectorVertical.className = "child-connector-vertical";
-
+        const childNode = createNode();
         childWrapper.appendChild(childConnectorVertical);
         childWrapper.appendChild(childNode);
         childrenWrapper.appendChild(childWrapper);
       });
 
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "delete-button";
+      deleteButton.textContent = "×";
+      deleteButton.addEventListener("click", () => {
+        const root = document.getElementById("tree-root");
+        if(wrapper === root.firstChild) {
+          alert("Não é possível excluir o nó raiz.");
+          return;
+        }
+        const childWrapper = wrapper.parentElement;
+        const container = childWrapper.parentElement;
+        childWrapper.remove();
+        if(container.querySelectorAll(".child-wrapper").length === 0) {
+          const parentNode = container.parentElement;
+          parentNode.querySelector(".connector-vertical")?.remove();
+          parentNode.querySelector(".children-container")?.remove();
+        }
+      });
+
+      box.appendChild(deleteButton);
+      box.appendChild(nameArea);
+      box.appendChild(nameInput);
+      box.appendChild(imageArea);
       box.appendChild(addButton);
       wrapper.appendChild(box);
+      return wrapper;
+    }
+
+    function extractNodeData(wrapper) {
+      const box = wrapper.querySelector(".node-box");
+      const name = box.querySelector(".name-area").textContent.trim();
+      const img = box.querySelector(".image-area img");
+      const image = img ? img.src : null;
+      const children = [];
+      wrapper.querySelectorAll(":scope > .children-container > .child-wrapper").forEach(child => {
+        children.push(extractNodeData(child.querySelector(".node-wrapper")));
+      });
+      return { name, image, children };
+    }
+
+    function recreateNode(data) {
+      const wrapper = createNode();
+      const box = wrapper.querySelector(".node-box");
+      box.querySelector(".name-area").textContent = data.name;
+      box.querySelector(".name-input").value = data.name;
+
+      if(data.image) {
+        const imageArea = box.querySelector(".image-area");
+        imageArea.innerHTML = "";
+        const img = document.createElement("img");
+        img.src = data.image;
+        imageArea.appendChild(img);
+      }
+
+      if(data.children.length) {
+        const connectorVertical = document.createElement("div");
+        connectorVertical.className = "connector-vertical";
+        const childrenWrapper = document.createElement("div");
+        childrenWrapper.className = "children-container";
+        const connectorHorizontal = document.createElement("div");
+        connectorHorizontal.className = "connector-horizontal";
+        childrenWrapper.appendChild(connectorHorizontal);
+        data.children.forEach(childData => {
+          const childWrapper = document.createElement("div");
+          childWrapper.className = "child-wrapper";
+          const childConnectorVertical = document.createElement("div");
+          childConnectorVertical.className = "child-connector-vertical";
+          const childNode = recreateNode(childData);
+          childWrapper.appendChild(childConnectorVertical);
+          childWrapper.appendChild(childNode);
+          childrenWrapper.appendChild(childWrapper);
+        });
+        wrapper.appendChild(connectorVertical);
+        wrapper.appendChild(childrenWrapper);
+      }
 
       return wrapper;
     }
 
-    // Inicializa com o nó raiz
-    const root = document.getElementById("tree-root");
-    root.appendChild(createNode(null));
+    document.getElementById("saveTreeBtn").addEventListener("click", () => {
+      const root = document.getElementById("tree-root").firstElementChild;
+      if(!root) return alert("Árvore vazia para salvar.");
+      const data = extractNodeData(root);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "arvore_genealogica.json";
+      a.click();
+    });
+
+    document.getElementById("loadTreeBtn").addEventListener("click", () => {
+      document.getElementById("fileInput").click();
+    });
+
+    document.getElementById("fileInput").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const data = JSON.parse(e.target.result);
+        const root = document.getElementById("tree-root");
+        root.innerHTML = "";
+        nodeId = 0;
+        root.appendChild(recreateNode(data));
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById("tree-root").appendChild(createNode());
   </script>
 </body>
 </html>
