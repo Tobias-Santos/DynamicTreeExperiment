@@ -334,44 +334,61 @@
       addButton.className = "add-button";
       addButton.textContent = "+";
 
-      const childrenWrapper = document.createElement("div");
-      childrenWrapper.className = "children-container";
-
-      const connectorHorizontal = document.createElement("div");
-      connectorHorizontal.className = "connector-horizontal";
-      childrenWrapper.appendChild(connectorHorizontal);
-
-      const connectorVertical = document.createElement("div");
-      connectorVertical.className = "connector-vertical";
-
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "delete-button";
+      deleteButton.textContent = "×";
+      
       addButton.addEventListener("click", () => {
-        if(childrenWrapper.childElementCount === 1) {
+        // Verifica se já existe um children-container
+        let childrenWrapper = wrapper.querySelector(".children-container");
+        let connectorVertical = wrapper.querySelector(".connector-vertical");
+        
+        // Se não existir, cria os elementos necessários
+        if (!childrenWrapper) {
+          connectorVertical = document.createElement("div");
+          connectorVertical.className = "connector-vertical";
           wrapper.appendChild(connectorVertical);
+          
+          childrenWrapper = document.createElement("div");
+          childrenWrapper.className = "children-container";
+          
+          const connectorHorizontal = document.createElement("div");
+          connectorHorizontal.className = "connector-horizontal";
+          childrenWrapper.appendChild(connectorHorizontal);
+          
           wrapper.appendChild(childrenWrapper);
         }
+        
+        // Cria a estrutura do novo nó filho
         const childWrapper = document.createElement("div");
         childWrapper.className = "child-wrapper";
+        
         const childConnectorVertical = document.createElement("div");
         childConnectorVertical.className = "child-connector-vertical";
+        
         const childNode = createNode();
+        
         childWrapper.appendChild(childConnectorVertical);
         childWrapper.appendChild(childNode);
         childrenWrapper.appendChild(childWrapper);
       });
 
-      const deleteButton = document.createElement("button");
-      deleteButton.className = "delete-button";
-      deleteButton.textContent = "×";
       deleteButton.addEventListener("click", () => {
         const root = document.getElementById("tree-root");
-        if(wrapper === root.firstChild) {
+        if (wrapper === root.firstChild) {
           alert("Não é possível excluir o nó raiz.");
           return;
         }
+        
+        // Encontra o wrapper do nó atual
         const childWrapper = wrapper.parentElement;
         const container = childWrapper.parentElement;
+        
+        // Remove apenas este nó
         childWrapper.remove();
-        if(container.querySelectorAll(".child-wrapper").length === 0) {
+        
+        // Atualiza os conectores se necessário
+        if (container.querySelectorAll(".child-wrapper").length === 0) {
           const parentNode = container.parentElement;
           parentNode.querySelector(".connector-vertical")?.remove();
           parentNode.querySelector(".children-container")?.remove();
@@ -405,7 +422,7 @@
       box.querySelector(".name-area").textContent = data.name;
       box.querySelector(".name-input").value = data.name;
 
-      if(data.image) {
+      if (data.image) {
         const imageArea = box.querySelector(".image-area");
         imageArea.innerHTML = "";
         const img = document.createElement("img");
@@ -413,24 +430,34 @@
         imageArea.appendChild(img);
       }
 
-      if(data.children.length) {
+      if (data.children && data.children.length > 0) {
+        // Cria a estrutura de containers primeiro
         const connectorVertical = document.createElement("div");
         connectorVertical.className = "connector-vertical";
+        
         const childrenWrapper = document.createElement("div");
         childrenWrapper.className = "children-container";
+        
         const connectorHorizontal = document.createElement("div");
         connectorHorizontal.className = "connector-horizontal";
         childrenWrapper.appendChild(connectorHorizontal);
+        
+        // Adiciona os filhos
         data.children.forEach(childData => {
           const childWrapper = document.createElement("div");
           childWrapper.className = "child-wrapper";
+          
           const childConnectorVertical = document.createElement("div");
           childConnectorVertical.className = "child-connector-vertical";
+          
           const childNode = recreateNode(childData);
+          
           childWrapper.appendChild(childConnectorVertical);
           childWrapper.appendChild(childNode);
           childrenWrapper.appendChild(childWrapper);
         });
+        
+        // Adiciona a estrutura completa ao wrapper
         wrapper.appendChild(connectorVertical);
         wrapper.appendChild(childrenWrapper);
       }
